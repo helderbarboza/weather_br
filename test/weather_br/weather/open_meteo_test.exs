@@ -2,7 +2,7 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
   use ExUnit.Case
   import Plug.Conn
 
-  test "get_temperatures/1 returns average temperatures" do
+  test "fetch_forecasts/2 returns raw temperature lists for given cities" do
     Req.Test.stub(WeatherBr.Weather.OpenMeteo, fn conn ->
       temperatures =
         case {conn.params["latitude"], conn.params["longitude"]} do
@@ -17,19 +17,21 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
     end)
 
     result =
-      WeatherBr.Weather.OpenMeteo.get_temperatures([
+      WeatherBr.Weather.OpenMeteo.fetch_forecasts([
         {"city_a", 10, 20},
         {"city_b", 11, 21},
         {"city_c", 12, 22}
       ])
 
-    [{city_a, temp_a}, {city_b, temp_b}, {city_c, temp_c}] = result
+    assert length(result) == 3
+
+    [{city_a, temps_a}, {city_b, temps_b}, {city_c, temps_c}] = result
     assert city_a == "city_a"
     assert city_b == "city_b"
     assert city_c == "city_c"
 
-    assert Decimal.compare(temp_a, Decimal.new("30")) == :eq
-    assert Decimal.compare(temp_b, Decimal.new("31")) == :eq
-    assert Decimal.compare(temp_c, Decimal.new("32")) == :eq
+    assert temps_a == [30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+    assert temps_b == [31.0, 31.0, 31.0, 31.0, 31.0, 31.0]
+    assert temps_c == [32.0, 32.0, 32.0, 32.0, 32.0, 32.0]
   end
 end
