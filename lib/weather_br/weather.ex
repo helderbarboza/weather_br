@@ -18,7 +18,8 @@ defmodule WeatherBr.Weather do
     |> Enum.map(fn {city_name, temps} -> {city_name, average(temps)} end)
   end
 
-  defp average(numbers) do
+  @doc false
+  def average(numbers) when is_list(numbers) and numbers !== [] do
     length = Enum.count(numbers)
 
     numbers

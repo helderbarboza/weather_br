@@ -25,4 +25,19 @@ defmodule WeatherBr.WeatherTest do
     assert Decimal.compare(temps["Belo Horizonte"], Decimal.new("35.5")) == :eq
     assert Decimal.compare(temps["Curitiba"], Decimal.new("23.5")) == :eq
   end
+
+  describe "average/1" do
+    test "returns the average for the list of floats" do
+      assert WeatherBr.Weather.average([1.0, 2.0, 3.0]) === Decimal.from_float(2.0)
+      assert WeatherBr.Weather.average([0.0, 0.0, 0.0]) === Decimal.from_float(0.0)
+      assert WeatherBr.Weather.average([1.0, 2.0]) === Decimal.from_float(1.5)
+      assert WeatherBr.Weather.average([-5.0, 5.0]) === Decimal.from_float(0.0)
+      assert WeatherBr.Weather.average([-1.0, -1.0]) === Decimal.from_float(-1.0)
+    end
+
+    test "raises when non-float numbers are passed" do
+      assert_raise FunctionClauseError, fn -> WeatherBr.Weather.average([1, 2, 3]) end
+      assert_raise FunctionClauseError, fn -> WeatherBr.Weather.average([Decimal.new("20")]) end
+    end
+  end
 end
