@@ -19,13 +19,14 @@
 
 ## Architecture
 
-The project follows a **three-layer facade pattern** with caching:
+The project follows a **three-layer facade pattern**:
 
-- `WeatherBr.Application` — OTP Application with a `one_for_one` supervisor; starts the `:weather_cache` Cachex instance and manages the process lifecycle.
-- `WeatherBr` — entrypoint module with `run/0` (default 6 days) that fetches, averages, and prints formatted results.
-- `WeatherBr.Weather` — public API facade containing hardcoded city coordinates and the `average/1` helper.
-- `WeatherBr.Weather.OpenMeteo` — orchestrates concurrent fetches (up to 5 parallel tasks, 15s timeout per task) via `Task.async_stream`, delegates HTTP to `OpenMeteo.Client`, and maps errors to the typed `OpenMeteo.Error` struct.
-- `WeatherBr.Req.CachexStep` — Req step plugin that intercepts requests and responses. On a cache hit, it returns the cached response (skipping the HTTP call); on a cache miss, it stores the response in Cachex with a configurable TTL (default 5 minutes).
+- **Application**: `WeatherBr.Application` — OTP Application with a `one_for_one` supervisor; starts the `:weather_cache` Cachex instance.
+- **Entrypoint**: `WeatherBr` — entrypoint with `run/0` (default 6 days) that fetches, averages, and formats results.
+- **Facade**: `WeatherBr.Weather` — public API facade holding hardcoded city coords and the `average/1` helper.
+  - `WeatherBr.Weather.OpenMeteo` — orchestrates concurrent fetches (up to 5 parallel tasks, 15s timeout) via `Task.async_stream`, delegates HTTP to `OpenMeteo.Client`, and maps errors to the typed `OpenMeteo.Error` struct.
+
+Caching is handled by `WeatherBr.Req.CachexStep`, a Req step plugin attached to the HTTP client pipeline. It intercepts requests and caches responses in Cachex.
 
 ## Getting Started
 
