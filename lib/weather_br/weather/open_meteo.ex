@@ -10,6 +10,8 @@ defmodule WeatherBr.Weather.OpenMeteo do
   successful cities alongside any failures.
   """
 
+  require Logger
+
   alias WeatherBr.Weather
   alias WeatherBr.Weather.OpenMeteo.Client
   alias WeatherBr.Weather.OpenMeteo.Error
@@ -38,6 +40,8 @@ defmodule WeatherBr.Weather.OpenMeteo do
   end
 
   def fetch_forecasts(cities, days) when is_list(cities) and is_integer(days) do
+    Logger.info("Fetching forecasts for #{length(cities)} cities, #{days} days ahead")
+
     cities
     |> Task.async_stream(
       fn {city_name, lat, lon} -> fetch_city_forecast(city_name, lat, lon, days) end,
@@ -63,6 +67,11 @@ defmodule WeatherBr.Weather.OpenMeteo do
         {:error, failure}, {succ, fail} -> {succ, [failure | fail]}
       end)
 
-    {:ok, Enum.reverse(successes), Enum.reverse(failures)}
+    successes = Enum.reverse(successes)
+    failures = Enum.reverse(failures)
+
+    Logger.info("Fetched forecasts: #{length(successes)} succeeded, #{length(failures)} failed")
+
+    {:ok, successes, failures}
   end
 end

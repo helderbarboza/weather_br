@@ -3,17 +3,24 @@ defmodule WeatherBr do
   Entrypoint for fetching and presenting weather forecasts.
   """
 
+  require Logger
+
   alias WeatherBr.Weather
 
   @spec run() :: String.t()
   def run do
+    Logger.info("Starting weather fetch...")
+
     6
     |> Weather.get_average_temperatures()
     |> format()
+    |> tap(fn _string -> Logger.info("Weather fetch completed") end)
   end
 
   @spec format({:ok, [{String.t(), Decimal.t()}], [{String.t(), String.t()}]}) :: String.t()
   def format({:ok, results, failures}) do
+    Logger.info("Formatted output: #{length(results)} cities, #{length(failures)} failures")
+
     successes =
       Enum.map_join(results, "\n", fn {city, temp} -> "#{city}: #{format_temp(temp)}°C" end)
 

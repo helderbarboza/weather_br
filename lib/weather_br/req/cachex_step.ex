@@ -14,6 +14,8 @@ defmodule WeatherBr.Req.CachexStep do
     * `:ttl` - time-to-live in milliseconds (default `:timer.minutes(30)`)
   """
 
+  require Logger
+
   @default_cache :weather_cache
   @default_ttl :timer.minutes(30)
 
@@ -32,9 +34,17 @@ defmodule WeatherBr.Req.CachexStep do
     key = cache_key(request)
 
     case Cachex.get(cache, key) do
-      {:ok, nil} -> request
-      {:ok, response} -> {request, response}
-      _entry -> request
+      {:ok, nil} ->
+        Logger.debug("Cache miss for #{key}")
+        request
+
+      {:ok, response} ->
+        Logger.debug("Cache hit for #{key}")
+        {request, response}
+
+      _entry ->
+        Logger.debug("Cache error for #{key}, bypassing")
+        request
     end
   end
 
@@ -44,6 +54,7 @@ defmodule WeatherBr.Req.CachexStep do
     key = cache_key(request)
 
     Cachex.put(cache, key, response, ttl: ttl)
+    Logger.debug("Cached response for #{key}")
     {request, response}
   end
 

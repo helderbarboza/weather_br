@@ -8,6 +8,8 @@ defmodule WeatherBr.Weather.OpenMeteo.Client do
   `WeatherBr.Weather.OpenMeteo`.
   """
 
+  require Logger
+
   alias WeatherBr.Weather.OpenMeteo.Error
 
   @type city_name :: String.t()
@@ -40,6 +42,8 @@ defmodule WeatherBr.Weather.OpenMeteo.Client do
   @spec get_forecast(city_name(), float(), float(), pos_integer()) ::
           {:ok, {city_name(), temperatures()}} | {:error, Error.t()}
   def get_forecast(city_name, lat, lon, days) do
+    Logger.debug("Fetching forecast for #{city_name} (lat=#{lat}, lon=#{lon})")
+
     req =
       new(
         params: [
@@ -52,12 +56,16 @@ defmodule WeatherBr.Weather.OpenMeteo.Client do
 
     case Req.get(req) do
       {:ok, %{status: 200, body: body}} ->
+        Logger.debug("Got HTTP 200 for #{city_name}")
         handle_ok_response(body, city_name, days)
 
       {:ok, response} ->
+        Logger.warning("Open-Meteo returned HTTP #{response.status} for #{city_name}")
         {:error, response_to_error(response, city_name)}
 
       {:error, exception} ->
+        Logger.error("HTTP request failed for #{city_name}: #{inspect(exception)}")
+
         {:error,
          Error.new(type: :http, city: city_name, reason: "request failed: #{inspect(exception)}")}
     end
@@ -66,12 +74,17 @@ defmodule WeatherBr.Weather.OpenMeteo.Client do
   defp handle_ok_response(body, city_name, days) do
     case body do
       %{"daily" => %{"temperature_2m_max" => temperatures}} when is_list(temperatures) ->
-        {:ok, {city_name, Enum.take(temperatures, days)}}
+        temps = Enum.take(temperatures, days)
+        Logger.debug("Parsed #{length(temps)} temperatures for #{city_name}")
+        {:ok, {city_name, temps}}
 
       %{"error" => true, "reason" => reason} ->
+        Logger.warning("API error for #{city_name}: #{reason}")
         {:error, Error.new(type: :api, status: 200, city: city_name, reason: reason)}
 
       other ->
+        Logger.error("Unexpected response body for #{city_name}: #{inspect(other)}")
+
         {:error,
          Error.new(
            type: :parse,
