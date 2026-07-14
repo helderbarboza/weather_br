@@ -55,7 +55,7 @@ iex> WeatherBr.run()
 Or fetch raw data:
 
 ```elixir
-iex> WeatherBr.Weather.get_average_temperatures()
+iex> WeatherBr.Weather.get_average_temperatures(6)
 [
   {"São Paulo", Decimal.new("21.3")},
   {"Belo Horizonte", Decimal.new("22.0")},
