@@ -1,4 +1,9 @@
 defmodule WeatherBr.Weather.OpenMeteo do
+  @moduledoc """
+  HTTP client wrapper around the Open-Meteo API for fetching
+  temperature forecasts for a given set of cities.
+  """
+
   def new(opts \\ []) do
     [
       url: "https://api.open-meteo.com/v1/forecast",

@@ -1,5 +1,5 @@
 defmodule WeatherBr.Weather.OpenMeteoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   test "fetch_forecasts/2 returns raw temperature lists for given cities" do
     Req.Test.stub(WeatherBr.Weather.OpenMeteo, fn conn ->

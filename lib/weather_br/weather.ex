@@ -1,4 +1,8 @@
 defmodule WeatherBr.Weather do
+  @moduledoc """
+  Public API facade for fetching and processing weather data.
+  """
+
   @cities [
     {"São Paulo", -23.55, -46.63},
     {"Belo Horizonte", -19.92, -43.94},

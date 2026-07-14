@@ -1,5 +1,5 @@
 defmodule WeatherBr.WeatherTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   test "get_average_temperatures/0 returns average temperatures for hardcoded cities" do
     Req.Test.stub(WeatherBr.Weather.OpenMeteo, fn conn ->
