@@ -16,7 +16,8 @@ defmodule WeatherBr.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {WeatherBr.Application, []}
     ]
   end
 
@@ -26,6 +27,7 @@ defmodule WeatherBr.MixProject do
       {:req, "~> 0.6"},
       {:decimal, "~> 3.1"},
       {:plug, "~> 1.20"},
+      {:cachex, "~> 4.1"},
       # Linting
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.2", only: [:dev], runtime: false}

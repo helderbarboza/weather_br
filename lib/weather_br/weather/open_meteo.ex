@@ -11,14 +11,19 @@ defmodule WeatherBr.Weather.OpenMeteo do
 
   @spec new(keyword()) :: Req.Request.t()
   def new(opts \\ []) do
+    {cachex_opts, opts} =
+      opts
+      |> Keyword.merge(Application.get_env(:weather_br, :http_client_options, []))
+      |> Keyword.pop(:cachex, cache: :weather_cache, ttl: :timer.minutes(5))
+
     [
       url: "https://api.open-meteo.com/v1/forecast",
       redirect: true,
       compressed: true
     ]
-    |> Keyword.merge(Application.get_env(:weather_br, :http_client_options, []))
     |> Keyword.merge(opts)
     |> Req.new()
+    |> WeatherBr.Req.CachexStep.attach(cachex_opts)
   end
 
   @spec fetch_forecasts([city()], integer()) :: [city_with_temps()]
