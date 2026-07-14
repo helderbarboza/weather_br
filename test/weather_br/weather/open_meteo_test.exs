@@ -1,6 +1,5 @@
 defmodule WeatherBr.Weather.OpenMeteoTest do
   use ExUnit.Case
-  import Plug.Conn
 
   test "fetch_forecasts/2 returns raw temperature lists for given cities" do
     Req.Test.stub(WeatherBr.Weather.OpenMeteo, fn conn ->
@@ -11,9 +10,7 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
           {"12", "22"} -> [32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0]
         end
 
-      conn
-      |> put_resp_content_type("application/json")
-      |> resp(200, Jason.encode!(%{"daily" => %{"temperature_2m_max" => temperatures}}))
+      Req.Test.json(conn, %{"daily" => %{"temperature_2m_max" => temperatures}})
     end)
 
     result =
