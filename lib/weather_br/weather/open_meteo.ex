@@ -29,11 +29,23 @@ defmodule WeatherBr.Weather.OpenMeteo do
   def fetch_forecasts(cities, days) when is_list(cities) and is_integer(days) do
     cities
     |> Task.async_stream(
-      fn {city_name, lat, lon} -> fetch_forecast(city_name, lat, lon, days) end,
+      fn {city_name, lat, lon} ->
+        try do
+          {:ok, fetch_forecast(city_name, lat, lon, days)}
+        rescue
+          e -> {:error, {city_name, e}}
+        end
+      end,
       max_concurrency: 5,
       timeout: 10_000
     )
-    |> Enum.map(fn {:ok, result} -> result end)
+    |> Enum.map(fn
+      {:ok, {:ok, result}} -> result
+      {:ok, {:error, {city_name, reason}}} ->
+        raise "forecast for #{city_name} failed: #{inspect(reason)}"
+      {:exit, reason} ->
+        raise "forecast task failed: #{inspect(reason)}"
+    end)
   end
 
   defp fetch_forecast(city_name, lat, lon, days) do

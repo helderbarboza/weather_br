@@ -40,6 +40,28 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
       end
     end
 
+    test "raises with city context when one city's request fails" do
+      Req.Test.stub(OpenMeteo, fn conn ->
+        case {conn.params["latitude"], conn.params["longitude"]} do
+          {"10", "20"} ->
+            Req.Test.json(conn, %{
+              "daily" => %{"temperature_2m_max" => [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]}
+            })
+
+          _coordinates ->
+            Req.Test.json(conn, %{})
+        end
+      end)
+
+      assert_raise RuntimeError, ~r/(city_b|city_c).*failed/, fn ->
+        OpenMeteo.fetch_forecasts([
+          {"city_a", 10, 20},
+          {"city_b", 11, 21},
+          {"city_c", 12, 22}
+        ])
+      end
+    end
+
     test "raises when called with an invalid number of days" do
       assert_raise ArgumentError, ~r/between 1 and 7/, fn ->
         OpenMeteo.fetch_forecasts([{"city_a", 11, 22}], 0)
