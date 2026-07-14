@@ -7,7 +7,9 @@ defmodule WeatherBr.MixProject do
       version: "0.1.0",
       elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer(),
+      aliases: aliases()
     ]
   end
 
@@ -24,7 +26,33 @@ defmodule WeatherBr.MixProject do
       {:req, "~> 0.6"},
       {:decimal, "~> 3.1"},
       {:plug, "~> 1.20"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      # Linting
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.2", only: [:dev], runtime: false}
+    ]
+  end
+
+  defp dialyzer() do
+    [
+      plt_core_path: "priv/plts",
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+    ]
+  end
+
+  defp aliases do
+    [
+      lint: [
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "credo --strict",
+        "cmd mkdir -p priv/plts",
+        "dialyzer"
+      ],
+      "lint:quick": [
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "credo --only warning"
+      ]
     ]
   end
 end

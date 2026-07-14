@@ -22,3 +22,6 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 weather_br-*.tar
 
+# Dialyzer PLTs (environment-specific, not committed).
+/priv/plts/*
+
