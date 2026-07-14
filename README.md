@@ -13,16 +13,19 @@
 | [Req](https://hex.pm/packages/req)           | ~> 0.6  | HTTP client                     |
 | [Decimal](https://hex.pm/packages/decimal)   | ~> 3.1  | Arbitrary-precision arithmetic  |
 | [Plug](https://hex.pm/packages/plug)         | ~> 1.20 | HTTP stubbing in tests          |
+| [Cachex](https://hex.pm/packages/cachex)     | ~> 4.0  | In-memory request caching       |
 | [Credo](https://hex.pm/packages/credo)       | ~> 1.7  | Static code analysis (dev/test) |
 | [Dialyxir](https://hex.pm/packages/dialyxir) | ~> 1.2  | Dialyzer integration (dev)      |
 
 ## Architecture
 
-The project follows a **two-layer facade pattern**:
+The project follows a **three-layer facade pattern** with caching:
 
+- `WeatherBr.Application` — OTP Application with a `one_for_one` supervisor; starts the `:weather_cache` Cachex instance and manages the process lifecycle.
 - `WeatherBr` — entrypoint module with `run/0` (default 6 days) that fetches, averages, and prints formatted results.
 - `WeatherBr.Weather` — public API facade containing hardcoded city coordinates and the `average/1` helper.
 - `WeatherBr.Weather.OpenMeteo` — HTTP client wrapper around the Open-Meteo `/v1/forecast` endpoint. Fetches forecasts concurrently (up to 5 parallel tasks, 10s timeout per task).
+- `WeatherBr.Req.CachexStep` — Req step plugin that intercepts requests and responses. On a cache hit, it returns the cached response (skipping the HTTP call); on a cache miss, it stores the response in Cachex with a configurable TTL (default 5 minutes).
 
 ## Getting Started
 
@@ -64,6 +67,7 @@ No API key is required — Open-Meteo is a free, open-source weather API.
 
 ## Key Features
 
+- **In-memory request caching** — HTTP responses cached in Cachex with a 5-minute TTL via a custom Req step plugin; repeated calls return instantly from memory, no network round-trip.
 - **Concurrent HTTP requests** — uses `Task.async_stream` with max 5 parallel tasks and 10s timeout
 - **Precise averaging** — temperature averages computed with `Decimal` to avoid floating-point drift
 - **Formatted output** — `WeatherBr.run/1` prints `city: temperature°C` directly to the console
