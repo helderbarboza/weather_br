@@ -19,6 +19,7 @@
 
 The project follows a **two-layer facade pattern**:
 
+- `WeatherBr` — entrypoint module with `run/0` (default 6 days) that fetches, averages, and prints formatted results.
 - `WeatherBr.Weather` — public API facade containing hardcoded city coordinates and the `average/1` helper.
 - `WeatherBr.Weather.OpenMeteo` — HTTP client wrapper around the Open-Meteo `/v1/forecast` endpoint. Fetches forecasts concurrently (up to 5 parallel tasks, 10s timeout per task).
 
@@ -42,11 +43,18 @@ mix deps.get
 ```elixir
 iex -S mix
 
+iex> WeatherBr.run()
+"São Paulo: 21.3°C\nBelo Horizonte: 22.0°C\nCuritiba: 18.8°C"
+```
+
+Or fetch raw data:
+
+```elixir
 iex> WeatherBr.Weather.get_average_temperatures()
 [
-  {"São Paulo", Decimal.new("30.5")},
-  {"Belo Horizonte", Decimal.new("35.5")},
-  {"Curitiba", Decimal.new("23.5")}
+  {"São Paulo", Decimal.new("21.3")},
+  {"Belo Horizonte", Decimal.new("22.0")},
+  {"Curitiba", Decimal.new("18.8")}
 ]
 ```
 
@@ -56,6 +64,7 @@ No API key is required — Open-Meteo is a free, open-source weather API.
 
 - **Concurrent HTTP requests** — uses `Task.async_stream` with max 5 parallel tasks and 10s timeout
 - **Precise averaging** — temperature averages computed with `Decimal` to avoid floating-point drift
+- **Formatted output** — `WeatherBr.run/1` prints `city: temperature°C` directly to the console
 - **Graceful error handling** — per-city error messages when an individual forecast request fails
 - **6-day forecast window** — configurable from 1 to 7 days
 
