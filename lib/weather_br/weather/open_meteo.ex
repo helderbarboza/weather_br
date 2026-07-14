@@ -1,30 +1,20 @@
 defmodule WeatherBr.Weather.OpenMeteo do
   @moduledoc """
-  HTTP client wrapper around the Open-Meteo API for fetching
-  temperature forecasts for a given set of cities.
+  Orchestrates concurrent weather forecast fetching from the Open-Meteo API.
+
+  Delegates HTTP transport and response parsing to
+  `WeatherBr.Weather.OpenMeteo.Client`. Retries of transient HTTP errors
+  (429, 5xx) and transport errors are handled by Req's built-in
+  `:safe_transient` retry step. Non-recoverable errors (400, bad response
+  body) fail immediately.
   """
 
   alias WeatherBr.Weather
+  alias WeatherBr.Weather.OpenMeteo.Client
+  alias WeatherBr.Weather.OpenMeteo.Error
 
   @type city :: Weather.city()
   @type city_with_temps :: {String.t(), [float()]}
-
-  @spec new(keyword()) :: Req.Request.t()
-  def new(opts \\ []) do
-    {cachex_opts, opts} =
-      opts
-      |> Keyword.merge(Application.get_env(:weather_br, :http_client_options, []))
-      |> Keyword.pop(:cachex, :default)
-
-    [
-      url: "https://api.open-meteo.com/v1/forecast",
-      redirect: true,
-      compressed: true
-    ]
-    |> Keyword.merge(opts)
-    |> Req.new()
-    |> maybe_attach_cache(cachex_opts)
-  end
 
   @spec fetch_forecasts([city()], integer()) :: [city_with_temps()]
   def fetch_forecasts(cities, days \\ 6)
@@ -41,49 +31,23 @@ defmodule WeatherBr.Weather.OpenMeteo do
   def fetch_forecasts(cities, days) when is_list(cities) and is_integer(days) do
     cities
     |> Task.async_stream(
-      fn {city_name, lat, lon} ->
-        try do
-          {:ok, fetch_forecast(city_name, lat, lon, days)}
-        rescue
-          e -> {:error, {city_name, e}}
-        end
-      end,
+      fn {city_name, lat, lon} -> fetch_city_forecast(city_name, lat, lon, days) end,
       max_concurrency: 5,
-      timeout: 10_000
+      timeout: 15_000
     )
     |> Enum.map(fn
       {:ok, {:ok, result}} ->
         result
 
-      {:ok, {:error, {city_name, reason}}} ->
-        raise "forecast for #{city_name} failed: #{inspect(reason)}"
+      {:ok, {:error, error}} ->
+        raise "forecast for #{error.city} failed: #{Error.message(error)}"
 
       {:exit, reason} ->
         raise "forecast task failed: #{inspect(reason)}"
     end)
   end
 
-  @spec fetch_forecast(String.t(), float(), float(), integer()) :: city_with_temps()
-  defp fetch_forecast(city_name, lat, lon, days) do
-    req =
-      new(
-        params: [
-          latitude: lat,
-          longitude: lon,
-          daily: "temperature_2m_max",
-          timezone: "America/Sao_Paulo"
-        ]
-      )
-
-    response = Req.get!(req)
-    %{"daily" => %{"temperature_2m_max" => temperatures}} = response.body
-    {city_name, Enum.take(temperatures, days)}
+  defp fetch_city_forecast(city_name, lat, lon, days) do
+    Client.get_forecast(city_name, lat, lon, days)
   end
-
-  defp maybe_attach_cache(req, false), do: req
-
-  defp maybe_attach_cache(req, :default),
-    do: WeatherBr.Req.CachexStep.attach(req, cache: :weather_cache, ttl: :timer.minutes(5))
-
-  defp maybe_attach_cache(req, opts), do: WeatherBr.Req.CachexStep.attach(req, opts)
 end

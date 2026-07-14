@@ -1,10 +1,11 @@
 defmodule WeatherBr.Weather.OpenMeteoTest do
   use ExUnit.Case, async: true
   alias WeatherBr.Weather.OpenMeteo
+  alias WeatherBr.Weather.OpenMeteo.Client
 
   describe "fetch_forecasts/2" do
     test "returns raw temperature lists for given cities" do
-      Req.Test.stub(OpenMeteo, fn conn ->
+      Req.Test.stub(Client, fn conn ->
         temperatures =
           case {conn.params["latitude"], conn.params["longitude"]} do
             {"10", "20"} -> [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
@@ -34,6 +35,18 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
       assert temps_c == [32.0, 32.0, 32.0, 32.0, 32.0, 32.0]
     end
 
+    test "respects the days parameter" do
+      Req.Test.stub(Client, fn conn ->
+        Req.Test.json(conn, %{
+          "daily" => %{"temperature_2m_max" => [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]}
+        })
+      end)
+
+      result = OpenMeteo.fetch_forecasts([{"city_a", 10, 20}], 3)
+      [{_city, temps}] = result
+      assert length(temps) == 3
+    end
+
     test "raises when called with an empty list of cities" do
       assert_raise ArgumentError, ~r/cities list must not be empty/, fn ->
         OpenMeteo.fetch_forecasts([])
@@ -41,7 +54,7 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
     end
 
     test "raises with city context when one city's request fails" do
-      Req.Test.stub(OpenMeteo, fn conn ->
+      Req.Test.stub(Client, fn conn ->
         case {conn.params["latitude"], conn.params["longitude"]} do
           {"10", "20"} ->
             Req.Test.json(conn, %{
