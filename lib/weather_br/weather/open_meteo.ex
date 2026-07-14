@@ -14,7 +14,7 @@ defmodule WeatherBr.Weather.OpenMeteo do
     {cachex_opts, opts} =
       opts
       |> Keyword.merge(Application.get_env(:weather_br, :http_client_options, []))
-      |> Keyword.pop(:cachex, cache: :weather_cache, ttl: :timer.minutes(5))
+      |> Keyword.pop(:cachex, :default)
 
     [
       url: "https://api.open-meteo.com/v1/forecast",
@@ -23,7 +23,7 @@ defmodule WeatherBr.Weather.OpenMeteo do
     ]
     |> Keyword.merge(opts)
     |> Req.new()
-    |> WeatherBr.Req.CachexStep.attach(cachex_opts)
+    |> maybe_attach_cache(cachex_opts)
   end
 
   @spec fetch_forecasts([city()], integer()) :: [city_with_temps()]
@@ -79,4 +79,11 @@ defmodule WeatherBr.Weather.OpenMeteo do
     %{"daily" => %{"temperature_2m_max" => temperatures}} = response.body
     {city_name, Enum.take(temperatures, days)}
   end
+
+  defp maybe_attach_cache(req, false), do: req
+
+  defp maybe_attach_cache(req, :default),
+    do: WeatherBr.Req.CachexStep.attach(req, cache: :weather_cache, ttl: :timer.minutes(5))
+
+  defp maybe_attach_cache(req, opts), do: WeatherBr.Req.CachexStep.attach(req, opts)
 end
