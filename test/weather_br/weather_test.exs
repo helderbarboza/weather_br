@@ -30,6 +30,7 @@ defmodule WeatherBr.WeatherTest do
 
   describe "average/1" do
     test "returns the average for the list of floats" do
+      assert D.compare(Weather.average([5.0, 5.0, 5.0]), D.from_float(5.0)) === :eq
       assert D.compare(Weather.average([1.0, 2.0, 3.0]), D.from_float(2.0)) === :eq
       assert D.compare(Weather.average([0.0, 0.0, 0.0]), D.from_float(0.0)) === :eq
       assert D.compare(Weather.average([1.0, 2.0]), D.from_float(1.5)) === :eq
