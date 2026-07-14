@@ -30,6 +30,7 @@ The project follows a **two-layer facade pattern**:
 
 - Elixir ~> 1.20
 - Erlang/OTP 26+
+- [asdf](https://asdf-vm.com) (Optional) — run `asdf install` to install the exact versions pinned in `.tool-versions`
 
 ### Installation
 
