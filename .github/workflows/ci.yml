@@ -10,7 +10,7 @@ on:
 env:
   MIX_ENV: test
   ELIXIR_VERSION: "1.20"
-  OTP_VERSION: "26"
+  OTP_VERSION: "27"
 
 jobs:
   lint:
