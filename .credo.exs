@@ -33,7 +33,7 @@
           {Credo.Check.Readability.NestedFunctionCalls,
            [priority: :high, min_pipeline_length: 3]},
           {Credo.Check.Readability.OneArityFunctionInPipe, []},
-          {Credo.Check.Readability.ParenthesesOnZeroArityDefs, []},
+          {Credo.Check.Readability.ParenthesesOnZeroArityDefs, [parens: false]},
           {Credo.Check.Readability.PipeIntoAnonymousFunctions, [priority: :high]},
           {Credo.Check.Readability.PredicateFunctionNames, []},
           {Credo.Check.Readability.PreferImplicitTry, []},

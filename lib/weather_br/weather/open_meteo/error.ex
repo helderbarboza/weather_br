@@ -1,4 +1,6 @@
 defmodule WeatherBr.Weather.OpenMeteo.Error do
+  @moduledoc false
+
   defexception [:message, :reason, :status, :city, :type]
 
   @type type :: :api | :http | :parse | :validation

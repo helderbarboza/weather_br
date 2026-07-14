@@ -3,14 +3,14 @@ defmodule WeatherBr.Weather do
   Public API facade for fetching and processing weather data.
   """
 
-  @type city :: {String.t(), float(), float()}
-  @type city_with_avg :: {String.t(), Decimal.t()}
-
   @cities [
     {"São Paulo", -23.55, -46.63},
     {"Belo Horizonte", -19.92, -43.94},
     {"Curitiba", -25.43, -49.27}
   ]
+
+  @type city :: {String.t(), float(), float()}
+  @type city_with_avg :: {String.t(), Decimal.t()}
 
   @doc false
   @spec cities() :: [city()]
