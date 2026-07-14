@@ -31,7 +31,13 @@ defmodule WeatherBr.Weather.OpenMeteo do
     {city_name, Enum.take(temperatures, days)}
   end
 
-  def fetch_forecasts(cities, days \\ 6) do
+  def fetch_forecasts(cities, days \\ 6)
+
+  def fetch_forecasts([], _days) do
+    raise ArgumentError, "Must contain at least one city."
+  end
+
+  def fetch_forecasts(cities, days) do
     cities
     |> Task.async_stream(
       fn {city_name, lat, lon} -> fetch_forecast(city_name, lat, lon, days) end,
