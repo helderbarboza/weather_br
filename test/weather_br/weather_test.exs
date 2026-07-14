@@ -15,7 +15,7 @@ defmodule WeatherBr.WeatherTest do
       Req.Test.json(conn, %{"daily" => %{"temperature_2m_max" => temperatures}})
     end)
 
-    result = Weather.get_average_temperatures(6)
+    assert {:ok, result, []} = Weather.get_average_temperatures(6)
     assert length(result) == 3
 
     temps = Map.new(result)
@@ -23,6 +23,27 @@ defmodule WeatherBr.WeatherTest do
     assert D.compare(temps["São Paulo"], D.new("30.5")) == :eq
     assert D.compare(temps["Belo Horizonte"], D.new("35.5")) == :eq
     assert D.compare(temps["Curitiba"], D.new("23.5")) == :eq
+  end
+
+  test "get_average_temperatures/0 returns partial results on failures" do
+    Req.Test.stub(WeatherBr.Weather.OpenMeteo.Client, fn conn ->
+      case {conn.params["latitude"], conn.params["longitude"]} do
+        {"-23.55", "-46.63"} ->
+          Req.Test.json(conn, %{
+            "daily" => %{"temperature_2m_max" => [28.0, 30.0, 32.0, 29.0, 31.0, 33.0, 30.0]}
+          })
+
+        _other ->
+          conn
+          |> Plug.Conn.put_status(400)
+          |> Req.Test.json(%{"error" => true, "reason" => "bad request"})
+      end
+    end)
+
+    assert {:ok, result, failures} = Weather.get_average_temperatures(6)
+    assert length(result) == 1
+    assert length(failures) == 2
+    assert {"São Paulo", _temp} = hd(result)
   end
 
   describe "average/1" do

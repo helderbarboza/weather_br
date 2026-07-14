@@ -6,7 +6,8 @@ defmodule WeatherBr.Weather.OpenMeteo do
   `WeatherBr.Weather.OpenMeteo.Client`. Retries of transient HTTP errors
   (429, 5xx) and transport errors are handled by Req's built-in
   `:safe_transient` retry step. Non-recoverable errors (400, bad response
-  body) fail immediately.
+  body) fail immediately. Results are returned with partial success —
+  successful cities alongside any failures.
   """
 
   alias WeatherBr.Weather
@@ -15,8 +16,16 @@ defmodule WeatherBr.Weather.OpenMeteo do
 
   @type city :: Weather.city()
   @type city_with_temps :: {String.t(), [float()]}
+  @type failure :: {String.t(), String.t()}
 
-  @spec fetch_forecasts([city()], integer()) :: [city_with_temps()]
+  @doc """
+  Fetches temperature forecasts for multiple cities concurrently.
+
+  Returns `{:ok, successes, failures}` where `successes` is the list of
+  successful `{city_name, temperatures}` tuples and `failures` is the
+  list of `{city_name, reason}` tuples for cities that failed.
+  """
+  @spec fetch_forecasts([city()], integer()) :: {:ok, [city_with_temps()], [failure()]}
   def fetch_forecasts(cities, days \\ 6)
 
   def fetch_forecasts(_cities, days) when days not in 1..7 do
@@ -35,19 +44,25 @@ defmodule WeatherBr.Weather.OpenMeteo do
       max_concurrency: 5,
       timeout: 15_000
     )
-    |> Enum.map(fn
-      {:ok, {:ok, result}} ->
-        result
-
-      {:ok, {:error, error}} ->
-        raise "forecast for #{error.city} failed: #{Error.message(error)}"
-
-      {:exit, reason} ->
-        raise "forecast task failed: #{inspect(reason)}"
+    |> Enum.flat_map(fn
+      {:ok, {:ok, result}} -> [{:ok, result}]
+      {:ok, {:error, error}} -> [{:error, {error.city, Error.message(error)}}]
+      {:exit, reason} -> [{:error, {"unknown", "task exited: #{inspect(reason)}"}}]
     end)
+    |> collect_results()
   end
 
   defp fetch_city_forecast(city_name, lat, lon, days) do
     Client.get_forecast(city_name, lat, lon, days)
+  end
+
+  defp collect_results(results) do
+    {successes, failures} =
+      Enum.reduce(results, {[], []}, fn
+        {:ok, success}, {succ, fail} -> {[success | succ], fail}
+        {:error, failure}, {succ, fail} -> {succ, [failure | fail]}
+      end)
+
+    {:ok, Enum.reverse(successes), Enum.reverse(failures)}
   end
 end
