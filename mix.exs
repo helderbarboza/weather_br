@@ -23,7 +23,8 @@ defmodule WeatherBr.MixProject do
     [
       {:req, "~> 0.6"},
       {:decimal, "~> 3.1"},
-      {:plug, "~> 1.20"}
+      {:plug, "~> 1.20"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end
