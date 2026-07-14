@@ -40,9 +40,12 @@ defmodule WeatherBr.Weather.OpenMeteo do
       timeout: 10_000
     )
     |> Enum.map(fn
-      {:ok, {:ok, result}} -> result
+      {:ok, {:ok, result}} ->
+        result
+
       {:ok, {:error, {city_name, reason}}} ->
         raise "forecast for #{city_name} failed: #{inspect(reason)}"
+
       {:exit, reason} ->
         raise "forecast task failed: #{inspect(reason)}"
     end)
