@@ -4,6 +4,12 @@ defmodule WeatherBr.Weather.OpenMeteo do
   temperature forecasts for a given set of cities.
   """
 
+  alias WeatherBr.Weather
+
+  @type city :: Weather.city()
+  @type city_with_temps :: {String.t(), [float()]}
+
+  @spec new(keyword()) :: Req.Request.t()
   def new(opts \\ []) do
     [
       url: "https://api.open-meteo.com/v1/forecast",
@@ -15,6 +21,7 @@ defmodule WeatherBr.Weather.OpenMeteo do
     |> Req.new()
   end
 
+  @spec fetch_forecasts([city()], integer()) :: [city_with_temps()]
   def fetch_forecasts(cities, days \\ 6)
 
   def fetch_forecasts(_cities, days) when days not in 1..7 do
@@ -51,6 +58,7 @@ defmodule WeatherBr.Weather.OpenMeteo do
     end)
   end
 
+  @spec fetch_forecast(String.t(), float(), float(), integer()) :: city_with_temps()
   defp fetch_forecast(city_name, lat, lon, days) do
     req =
       new(
