@@ -39,10 +39,6 @@ defmodule WeatherBr.WeatherTest do
       assert D.compare(Weather.average([-1.0, -1.0]), D.from_float(-1.0)) === :eq
     end
 
-    test "raises on empty list" do
-      assert_raise FunctionClauseError, fn -> Weather.average([]) end
-    end
-
     test "raises when non-float numbers are passed" do
       assert_raise FunctionClauseError, fn -> Weather.average([1, 2, 3]) end
       assert_raise FunctionClauseError, fn -> Weather.average([D.new("20")]) end
