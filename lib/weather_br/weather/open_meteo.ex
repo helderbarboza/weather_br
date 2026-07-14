@@ -27,16 +27,16 @@ defmodule WeatherBr.Weather.OpenMeteo do
   successful `{city_name, temperatures}` tuples and `failures` is the
   list of `{city_name, reason}` tuples for cities that failed.
   """
-  @spec fetch_forecasts([city()], integer()) :: {:ok, [city_with_temps()], [failure()]}
+  @spec fetch_forecasts([city()], integer()) ::
+          {:ok, [city_with_temps()], [failure()]} | {:error, String.t()}
   def fetch_forecasts(cities, days \\ 6)
 
   def fetch_forecasts(_cities, days) when days not in 1..7 do
-    raise ArgumentError,
-          "days must be an integer between 1 and 7 (inclusive), got: #{inspect(days)}"
+    {:error, "days must be an integer between 1 and 7 (inclusive), got: #{inspect(days)}"}
   end
 
   def fetch_forecasts([] = cities, _days) do
-    raise ArgumentError, "cities list must not be empty, got: #{inspect(cities)}"
+    {:error, "cities list must not be empty, got: #{inspect(cities)}"}
   end
 
   def fetch_forecasts(cities, days) when is_list(cities) and is_integer(days) do

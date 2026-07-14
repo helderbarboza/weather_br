@@ -46,20 +46,17 @@ defmodule WeatherBr.Weather.OpenMeteoTest do
       assert length(temps) == 3
     end
 
-    test "raises when called with an empty list of cities" do
-      assert_raise ArgumentError, ~r/cities list must not be empty/, fn ->
-        OpenMeteo.fetch_forecasts([])
-      end
+    test "returns error when called with an empty list of cities" do
+      assert {:error, message} = OpenMeteo.fetch_forecasts([])
+      assert message =~ "cities list must not be empty"
     end
 
-    test "raises when called with an invalid number of days" do
-      assert_raise ArgumentError, ~r/between 1 and 7/, fn ->
-        OpenMeteo.fetch_forecasts([{"city_a", 11, 22}], 0)
-      end
+    test "returns error when called with an invalid number of days" do
+      assert {:error, message} = OpenMeteo.fetch_forecasts([{"city_a", 11, 22}], 0)
+      assert message =~ "between 1 and 7"
 
-      assert_raise ArgumentError, ~r/between 1 and 7/, fn ->
-        OpenMeteo.fetch_forecasts([{"city_a", 11, 22}], 8)
-      end
+      assert {:error, message} = OpenMeteo.fetch_forecasts([{"city_a", 11, 22}], 8)
+      assert message =~ "between 1 and 7"
     end
 
     test "returns failure on 400 Bad Request with API reason" do

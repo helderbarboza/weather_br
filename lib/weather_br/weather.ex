@@ -17,17 +17,20 @@ defmodule WeatherBr.Weather do
   def cities, do: @cities
 
   @spec get_average_temperatures(integer()) ::
-          {:ok, [city_with_avg()], [{String.t(), String.t()}]}
+          {:ok, [city_with_avg()], [{String.t(), String.t()}]} | {:error, String.t()}
   def get_average_temperatures(days) do
-    {:ok, results, failures} =
-      WeatherBr.Weather.OpenMeteo.fetch_forecasts(cities(), days)
+    case WeatherBr.Weather.OpenMeteo.fetch_forecasts(cities(), days) do
+      {:ok, results, failures} ->
+        averages =
+          Enum.map(results, fn {city_name, temps} ->
+            {city_name, average(temps)}
+          end)
 
-    averages =
-      Enum.map(results, fn {city_name, temps} ->
-        {city_name, average(temps)}
-      end)
+        {:ok, averages, failures}
 
-    {:ok, averages, failures}
+      {:error, _reason} = error ->
+        error
+    end
   end
 
   @doc false

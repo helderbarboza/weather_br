@@ -17,7 +17,10 @@ defmodule WeatherBr do
     |> tap(fn _string -> Logger.info("Weather fetch completed") end)
   end
 
-  @spec format({:ok, [{String.t(), Decimal.t()}], [{String.t(), String.t()}]}) :: String.t()
+  @spec format(
+          {:ok, [{String.t(), Decimal.t()}], [{String.t(), String.t()}]}
+          | {:error, String.t()}
+        ) :: String.t()
   def format({:ok, results, failures}) do
     Logger.info("Formatted output: #{length(results)} cities, #{length(failures)} failures")
 
@@ -29,6 +32,10 @@ defmodule WeatherBr do
     [successes, errors]
     |> Enum.reject(&(&1 == ""))
     |> Enum.join("\n\n")
+  end
+
+  def format({:error, reason}) do
+    "Error: #{reason}"
   end
 
   defp format_failures([]), do: ""
