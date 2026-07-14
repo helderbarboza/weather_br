@@ -7,15 +7,15 @@
 
 ## Technology Stack
 
-| Technology                                   | Version | Purpose                         |
-| -------------------------------------------- | ------- | ------------------------------- |
-| Elixir                                       | ~> 1.20 | Language & runtime              |
-| [Req](https://hex.pm/packages/req)           | ~> 0.6  | HTTP client                     |
-| [Decimal](https://hex.pm/packages/decimal)   | ~> 3.1  | Arbitrary-precision arithmetic  |
-| [Plug](https://hex.pm/packages/plug)         | ~> 1.20 | HTTP stubbing in tests          |
-| [Cachex](https://hex.pm/packages/cachex)     | ~> 4.0  | In-memory request caching       |
-| [Credo](https://hex.pm/packages/credo)       | ~> 1.7  | Static code analysis (dev/test) |
-| [Dialyxir](https://hex.pm/packages/dialyxir) | ~> 1.2  | Dialyzer integration (dev)      |
+| Technology                                   | Purpose                         |
+| -------------------------------------------- | ------------------------------- |
+| Elixir                                       | Language & runtime              |
+| [Req](https://hex.pm/packages/req)           | HTTP client                     |
+| [Decimal](https://hex.pm/packages/decimal)   | Arbitrary-precision arithmetic  |
+| [Plug](https://hex.pm/packages/plug)         | HTTP stubbing in tests          |
+| [Cachex](https://hex.pm/packages/cachex)     | In-memory request caching       |
+| [Credo](https://hex.pm/packages/credo)       | Static code analysis (dev/test) |
+| [Dialyxir](https://hex.pm/packages/dialyxir) | Dialyzer integration (dev)      |
 
 ## Architecture
 
