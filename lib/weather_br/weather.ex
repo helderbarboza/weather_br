@@ -12,9 +12,9 @@ defmodule WeatherBr.Weather do
   @doc false
   def cities, do: @cities
 
-  def get_average_temperatures do
+  def get_average_temperatures(days) do
     cities()
-    |> WeatherBr.Weather.OpenMeteo.fetch_forecasts()
+    |> WeatherBr.Weather.OpenMeteo.fetch_forecasts(days)
     |> Enum.map(fn {city_name, temps} -> {city_name, average(temps)} end)
   end
 

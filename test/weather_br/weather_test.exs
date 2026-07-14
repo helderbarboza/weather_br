@@ -18,7 +18,7 @@ defmodule WeatherBr.WeatherTest do
       Req.Test.json(conn, %{"daily" => %{"temperature_2m_max" => temperatures}})
     end)
 
-    result = Weather.get_average_temperatures()
+    result = Weather.get_average_temperatures(6)
     assert length(result) == 3
 
     temps = Map.new(result)
