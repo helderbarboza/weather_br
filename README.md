@@ -1,5 +1,6 @@
 # WeatherBr
 
+[![CI](https://github.com/helderbarboza/weather_br/actions/workflows/ci.yml/badge.svg)](https://github.com/helderbarboza/weather_br/actions/workflows/ci.yml)
 [![Elixir](https://img.shields.io/badge/elixir-1.20-4B275F?style=flat&logo=elixir&logoColor=white)](mix.exs)
 
 **WeatherBr** is an Elixir library that fetches weather forecast data from the [Open-Meteo API](https://open-meteo.com/) for major Brazilian cities and computes average daily maximum temperatures with precise decimal arithmetic.
